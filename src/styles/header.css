@@ -1,0 +1,57 @@
+/* ═══════════════ header ═══════════════ */
+.hdr{position:sticky;top:0;z-index:70;height:var(--hdr-h);display:flex;align-items:center;gap:22px;
+  padding-inline:26px;background:var(--glass);backdrop-filter:blur(20px) saturate(1.7);
+  -webkit-backdrop-filter:blur(20px) saturate(1.7);
+  border-bottom:1px solid transparent;transition:height .4s var(--ease),border-color .4s,box-shadow .4s,background .4s}
+.hdr.is-stuck{height:64px;border-bottom-color:var(--line);box-shadow:var(--shadow-s)}
+.brand{display:flex;align-items:center;gap:11px;flex:none}
+.brand__mark{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;flex:none;
+  background:linear-gradient(150deg,var(--accent),var(--gold));color:#fff;font-family:var(--f-display);
+  font-weight:700;font-size:1rem;letter-spacing:.02em;box-shadow:0 6px 18px -6px var(--accent);
+  transition:transform .5s var(--ease)}
+.brand:hover .brand__mark{transform:rotate(-10deg) scale(1.06)}
+.brand__text{display:flex;flex-direction:column;line-height:1.12}
+.brand__text strong{font-family:var(--f-display);font-size:1.12rem;font-weight:600;letter-spacing:-.01em}
+.hdr__nav{display:flex;gap:4px;margin-left:8px}
+.hdr__nav a{position:relative;padding:8px 13px;border-radius:99px;font-size:.88rem;font-weight:500;
+  color:var(--ink-2);transition:color .25s,background .25s}
+.hdr__nav a::after{content:"";position:absolute;left:50%;bottom:3px;width:0;height:2px;border-radius:2px;
+  background:var(--accent);transform:translateX(-50%);transition:width .35s var(--ease)}
+.hdr__nav a:hover{color:var(--ink)}
+.hdr__nav a:hover::after,.hdr__nav a.is-active::after{width:22px}
+.hdr__nav a.is-active{color:var(--accent);font-weight:600}
+.hdr__actions{display:flex;align-items:center;gap:9px;margin-left:auto}
+.account-btn{display:flex;align-items:center;gap:8px;padding:4px 13px 4px 4px;border-radius:99px;
+  border:1px solid var(--line);background:var(--surface);font-size:.85rem;font-weight:600;
+  transition:border-color .3s,transform .3s var(--ease)}
+.account-btn:hover{border-color:var(--accent);transform:translateY(-2px)}
+.account-btn__name{max-width:96px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* theme icon swap */
+#btn-theme .ico-moon{display:none}
+html[data-theme="dark"] #btn-theme .ico-moon{display:block}
+html[data-theme="dark"] #btn-theme .ico-sun{display:none}
+
+/* account chip + staff badge */
+.account-btn__tag{padding:2px 8px;border-radius:99px;font-size:.66rem;letter-spacing:.09em;
+  text-transform:uppercase;font-weight:700;background:var(--accent-soft);color:var(--accent)}
+.account-btn[data-role="admin"]{border-color:var(--accent);background:var(--accent-soft)}
+
+/* ═══════════════ search sheet ═══════════════ */
+.search-sheet{position:fixed;inset:var(--hdr-h) 0 auto;z-index:65;padding:22px 26px 16px;
+  background:var(--glass);backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--line);box-shadow:var(--shadow-m);
+  animation:sheetDown .45s var(--ease-out)}
+@keyframes sheetDown{from{opacity:0;transform:translateY(-100%)}to{opacity:1;transform:none}}
+.search-sheet__inner{max-width:760px;margin-inline:auto;display:flex;align-items:center;gap:13px;
+  padding:6px 8px 6px 18px;background:var(--surface);border:1.5px solid var(--line-2);border-radius:var(--r-pill);
+  transition:border-color .3s,box-shadow .3s}
+.search-sheet__inner:focus-within{border-color:var(--accent);box-shadow:0 0 0 5px var(--accent-soft)}
+.search-sheet__ico{width:20px;height:20px;color:var(--ink-3);flex:none}
+#search-input{flex:1;border:0;background:none;outline:none;padding:12px 0;font-size:1.02rem}
+#search-input::placeholder{color:var(--ink-2)}
+.search-sheet kbd{font-family:var(--f-body);font-size:.68rem;font-weight:600;color:var(--ink-2);
+  border:1px solid var(--line-2);border-bottom-width:2px;border-radius:6px;padding:3px 7px;background:var(--surface-2)}
+.search-sheet__hint{max-width:760px;margin:11px auto 0;font-size:.8rem;color:var(--ink-2);text-align:center}
+.search-sheet__hint b{color:var(--accent)}
+
