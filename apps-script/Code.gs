@@ -2,6 +2,7 @@
 
 const SHEET_NAME = "Sheet1";
 const STATE_FILE = "bistro-eleven-state.json";
+const BUILD = "v2";
 const HEAD = ["Waktu", "Nomor pesanan", "Nama customer", "Tipe pesanan",
               "Alamat / No. meja", "Daftar makanan", "Catatan", "Total harga"];
 
@@ -11,12 +12,13 @@ function target() {
 }
 
 function ok(o) {
+  o.build = BUILD;
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
 }
 
 function stateFile() {
   const found = DriveApp.getFilesByName(STATE_FILE);
-  return found.hasNext() ? found.next() : DriveApp.createFile(STATE_FILE, "", "text/plain");
+  return found.hasNext() ? found.next() : DriveApp.createFile(STATE_FILE, "{}");
 }
 
 function loadState() {
@@ -56,12 +58,12 @@ function doPost(e) {
     if (p.action === "load") return ok(loadState());
     if (p.action === "save") {
       const savedAt = new Date().toISOString();
-      stateFile().setContent(JSON.stringify({ savedAt: savedAt, state: p.state }), "text/plain");
+      stateFile().setContent(JSON.stringify({ savedAt: savedAt, state: p.state }));
       return ok({ ok: true, saved: savedAt });
     }
     return ok(append(p));
   } catch (err) {
-    return ok({ ok: false, error: String(err) });
+    return ok({ ok: false, step: p && p.action ? p.action : "append", error: String(err) });
   } finally {
     lock.releaseLock();
   }
