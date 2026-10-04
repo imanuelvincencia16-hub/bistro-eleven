@@ -5,12 +5,22 @@ export const SHEET_URL =
   "https://docs.google.com/spreadsheets/d/1GW0R8YADNkdQSzHuWwMNOoz5ZynpQlZghP08N7oEbQk/edit?gid=0#gid=0";
 
 const HOOK_KEY = "bistro-eleven.sheet-hook";
+const OFF = "bistro-eleven.off";
 
-export const getHook = () => { try { return localStorage.getItem(HOOK_KEY) || ""; } catch { return ""; } };
+export const DEFAULT_HOOK =
+  "https://script.google.com/macros/s/AKfycbwnnyNMjqlappA8CPALbnLXPUR3F0egzX8uULb28Tq1liXHu5OyrnvgjpS_yVRFNUB3Ig/exec";
+
+export const getHook = () => {
+  try {
+    const saved = localStorage.getItem(HOOK_KEY);
+    if (saved === OFF) return "";
+    return saved || DEFAULT_HOOK;
+  } catch { return DEFAULT_HOOK; }
+};
 
 export const setHook = url => {
   try {
-    url ? localStorage.setItem(HOOK_KEY, url) : localStorage.removeItem(HOOK_KEY);
+    localStorage.setItem(HOOK_KEY, url || OFF);
   } catch {}
 };
 

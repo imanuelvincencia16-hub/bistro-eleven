@@ -12,8 +12,8 @@ const STEPS = [
    "Tempel skriptnya menimpa seluruh isi Code.gs, lalu simpan. Yang sama ini menulis baris dan salinan perangkat."],
   ["Deploy → Manage deployments → the pencil on your web app → Version: New version → Deploy.",
    "Deploy → Manage deployments → ikon pensil di web app-mu → Version: New version → Deploy."],
-  ["Copy the /exec url into the field above. That one is not the sheet url.",
-   "Salin URL /exec-nya ke kolom di atas. Yang itu bukan URL sheet."]
+  ["The app already points at your deployment. Paste again only if you publish a different /exec url.",
+   "App-nya sudah mengarah ke deploy-mu. Tempel lagi hanya kalau kamu publish URL /exec yang berbeda."]
 ];
 
 export default function SheetSync({ onSaved }) {
