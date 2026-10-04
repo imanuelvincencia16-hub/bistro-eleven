@@ -1,5 +1,5 @@
 /* Bistro Eleven service worker. */
-const CACHE = "bistro-eleven-v1";
+const CACHE = "bistro-eleven-v2";
 const SHELL = [
   "/",
   "/index.html",
