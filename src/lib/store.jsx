@@ -77,7 +77,7 @@ const ensureThread = d => {
 
 const threadOf = (d, id) => (id === threadKey(d.session) ? ensureThread(d) : d.chats.find(c => c.id === id) || null);
 
-const cloudJson = d => JSON.stringify({ ...d, session: null });
+const cloudJson = d => JSON.stringify({ ...d, session: null, cart: {} });
 
 export function AppProvider({ children }) {
   const [data, setData] = useState(loadState);
@@ -144,8 +144,8 @@ export function AppProvider({ children }) {
   const syncCloud = useCallback(async () => {
     const c = cloud.current;
     if (!c.on || c.pending) return;
-    const payload = { ...dataRef.current, session: null };
-    const here = JSON.stringify(payload);
+    const payload = { ...dataRef.current, session: null, cart: {} };
+    const here = cloudJson(payload);
     if (here !== c.last) {
       c.pending = true;
       const saved = await pushCloud(payload);
@@ -155,7 +155,7 @@ export function AppProvider({ children }) {
     }
     const r = await pullCloud();
     if (!r || !r.state || r.saved === c.saved) return;
-    const next = hydrate({ ...r.state, session: dataRef.current.session });
+    const next = hydrate({ ...r.state, cart: dataRef.current.cart, session: dataRef.current.session });
     const json = cloudJson(next);
     c.saved = r.saved;
     if (json !== here) { c.last = json; setData(next); }
@@ -172,7 +172,7 @@ export function AppProvider({ children }) {
     c.on = true;
     c.saved = r.saved || "";
     if (r.state) {
-      const next = hydrate({ ...r.state, session: dataRef.current.session });
+      const next = hydrate({ ...r.state, cart: dataRef.current.cart, session: dataRef.current.session });
       c.last = cloudJson(next);
       setData(d => (cloudJson(d) === c.last ? d : next));
       showCloud();
@@ -439,14 +439,18 @@ export function AppProvider({ children }) {
       .then(() => { sheetBusy.current.delete(o.id); }), Promise.resolve()).then(() => sent);
   }, [t, data.menu, write]);
 
-  const sheetSwept = useRef(false);
+  const retrySheet = useCallback(() => {
+    if (document.visibilityState !== "visible" || !getHook()) return;
+    const stuck = dataRef.current.orders.filter(o => !o.synced);
+    if (stuck.length) sendToSheet(stuck);
+  }, [sendToSheet]);
+
   useEffect(() => {
-    if (sheetSwept.current) return undefined;
-    sheetSwept.current = true;
-    const waiting = getHook() ? data.orders.filter(o => !o.synced) : [];
-    if (waiting.length) sendToSheet(waiting);
-    return undefined;
-  }, [data.orders, sendToSheet]);
+    retrySheet();
+    const id = setInterval(retrySheet, 15000);
+    document.addEventListener("visibilitychange", retrySheet);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", retrySheet); };
+  }, [retrySheet]);
 
   const placeOrder = useCallback(order => {
     write(d => {
