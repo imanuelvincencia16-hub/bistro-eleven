@@ -16,7 +16,7 @@ function ok(o) {
 
 function stateFile() {
   const found = DriveApp.getFilesByName(STATE_FILE);
-  return found.hasNext() ? found.next() : DriveApp.createFile(STATE_FILE, "", MimeType.TEXT_PLAIN);
+  return found.hasNext() ? found.next() : DriveApp.createFile(STATE_FILE, "", "text/plain");
 }
 
 function loadState() {
@@ -56,7 +56,7 @@ function doPost(e) {
     if (p.action === "load") return ok(loadState());
     if (p.action === "save") {
       const savedAt = new Date().toISOString();
-      stateFile().setContent(JSON.stringify({ savedAt: savedAt, state: p.state }), "UTF-8");
+      stateFile().setContent(JSON.stringify({ savedAt: savedAt, state: p.state }), "text/plain");
       return ok({ ok: true, saved: savedAt });
     }
     return ok(append(p));
