@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useApp } from "../../lib/store.jsx";
+import { clockTime } from "../../lib/format.js";
 import { getHook, setHook } from "../../lib/sheets.js";
 import ModalHead from "../ModalHead.jsx";
 import Ico from "../../lib/icons.jsx";
@@ -7,8 +8,10 @@ import Ico from "../../lib/icons.jsx";
 const STEPS = [
   ["Open the sheet, then Extensions → Apps Script.",
    "Buka sheet-nya, lalu Extensions → Apps Script."],
-  ["Paste the doPost helper, then Deploy → New deployment → Web app, Execute as: Me, Access: Anyone.",
-   "Tempel helper doPost, lalu Deploy → New deployment → Web app, Execute as: Me, Access: Anyone."],
+  ["Replace everything in Code.gs with the script and save. The same one writes the rows and the device copy.",
+   "Tempel skriptnya menimpa seluruh isi Code.gs, lalu simpan. Yang sama ini menulis baris dan salinan perangkat."],
+  ["Deploy → Manage deployments → the pencil on your web app → Version: New version → Deploy.",
+   "Deploy → Manage deployments → ikon pensil di web app-mu → Version: New version → Deploy."],
   ["Copy the /exec url into the field above. That one is not the sheet url.",
    "Salin URL /exec-nya ke kolom di atas. Yang itu bukan URL sheet."]
 ];
@@ -23,10 +26,14 @@ export default function SheetSync({ onSaved }) {
   const saved = getHook();
   const on = !!saved;
   const dirty = url !== saved;
+  const { cloud } = app;
+  const clock = cloud.saved ? t(`Last write ${clockTime(cloud.saved)}.`, `Tulis terakhir ${clockTime(cloud.saved)}.`)
+    : t("Nothing is stored there yet.", "Belum ada yang tersimpan di sana.");
 
   const apply = next => {
     setHook(next); setDraft(next); setErr("");
     onSaved?.(next);
+    app.readCloud();
     return next;
   };
 
@@ -65,8 +72,8 @@ export default function SheetSync({ onSaved }) {
   return (
     <>
       <ModalHead title={t("Spreadsheet sync", "Sinkronisasi spreadsheet")}
-                 sub={t("One paste, then every new ticket writes itself into your sheet.",
-                        "Tempel sekali, tiap tiket baru menulis dirinya ke sheetmu.")} />
+                 sub={t("One paste, then every new ticket writes itself into your sheet and your board follows you to another device.",
+                        "Tempel sekali, tiap tiket baru menulis dirinya ke sheetmu dan papannya ikut ke perangkat lain.")} />
       <div className="modal__body">
         <p className={`sync-state${on ? " is-on" : dirty ? " is-wait" : ""}`}>
           <i />
@@ -97,6 +104,14 @@ export default function SheetSync({ onSaved }) {
             </button>}
           </div>
         </form>
+
+        <p className={`sync-state${cloud.on ? " is-on" : ""}`}>
+          <i />
+          {cloud.on
+            ? t(`Other devices open this same board. ${clock}`, `Perangkat lain membuka papan yang sama. ${clock}`)
+            : t("Devices keep their own copy until this url answers. New tickets reach the sheet either way.",
+                "Tiap perangkat tetap menyimpan salinannya sendiri sampai URL ini menjawab. Tiket baru masuk sheet dalam kedua keadaan.")}
+        </p>
 
         {!!waiting.length && (
           <button className="btn btn--ghost btn--sm sync-send" type="button" onClick={send}>

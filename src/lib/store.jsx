@@ -2,10 +2,11 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { CATEGORIES, MENU, STATUS_FLOW } from "../data/menu.js";
 import { DELIVERY_FEE, FREE_OVER, PICKUP_FEE, PROMOS, SEED_REVIEWS, SERVICE_RATE, STAFF, TAX_RATE } from "../data/biz.js";
 import { answer, opening } from "./assistant.js";
-import { defaults, emptyVault, loadState, saveState, threadKey } from "./storage.js";
+import { defaults, emptyVault, hydrate, loadState, saveState, threadKey } from "./storage.js";
 import { CAT_ID, LANGS, LOCALE, TAG_ID, makeT } from "./i18n.js";
 import { syncThemeColor } from "./pwa.js";
 import { getHook, pushOrder } from "./sheets.js";
+import { pullCloud, pushCloud } from "./cloud.js";
 import { money, r0, setLocale, uid } from "./format.js";
 
 const Ctx = createContext(null);
@@ -76,6 +77,8 @@ const ensureThread = d => {
 
 const threadOf = (d, id) => (id === threadKey(d.session) ? ensureThread(d) : d.chats.find(c => c.id === id) || null);
 
+const cloudJson = d => JSON.stringify({ ...d, session: null });
+
 export function AppProvider({ children }) {
   const [data, setData] = useState(loadState);
   const [ui, setUi] = useState(() => ({
@@ -89,7 +92,11 @@ export function AppProvider({ children }) {
   const [tracker, setTracker] = useState(null);
   const [toasts, setToasts] = useState([]);
   const authFrom = useRef(0);
-  const timers = useRef({ modal: 0, drawer: 0, chat: 0, chatOut: 0 });
+  const timers = useRef({ modal: 0, drawer: 0, chat: 0, chatOut: 0, push: 0 });
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const cloud = useRef({ on: false, last: "", saved: "", pending: false });
+  const [cloudUi, setCloudUi] = useState({ on: false, saved: "" });
 
   const patchUi = useCallback(p => setUi(u => ({ ...u, ...p })), []);
 
@@ -130,6 +137,66 @@ export function AppProvider({ children }) {
     if (manifest) manifest.href = id ? "/manifest.id.webmanifest" : "/manifest.webmanifest";
     setLocale(LOCALE[code]);
   }, [data.lang]);
+
+  /* ── cloud sync ── */
+  const showCloud = useCallback(() => setCloudUi({ on: cloud.current.on, saved: cloud.current.saved }), []);
+
+  const syncCloud = useCallback(async () => {
+    const c = cloud.current;
+    if (!c.on || c.pending) return;
+    const payload = { ...dataRef.current, session: null };
+    const here = JSON.stringify(payload);
+    if (here !== c.last) {
+      c.pending = true;
+      const saved = await pushCloud(payload);
+      c.pending = false;
+      if (saved) { c.last = here; c.saved = saved; showCloud(); }
+      return;
+    }
+    const r = await pullCloud();
+    if (!r || !r.state || r.saved === c.saved) return;
+    const next = hydrate({ ...r.state, session: dataRef.current.session });
+    const json = cloudJson(next);
+    c.saved = r.saved;
+    if (json !== here) { c.last = json; setData(next); }
+    showCloud();
+  }, [showCloud]);
+
+  const readCloud = useCallback(async () => {
+    const r = await pullCloud();
+    const c = cloud.current;
+    if (!r) {
+      if (c.on) { c.on = false; showCloud(); }
+      return;
+    }
+    c.on = true;
+    c.saved = r.saved || "";
+    if (r.state) {
+      const next = hydrate({ ...r.state, session: dataRef.current.session });
+      c.last = cloudJson(next);
+      setData(d => (cloudJson(d) === c.last ? d : next));
+      showCloud();
+      return;
+    }
+    c.last = "";
+    showCloud();
+    syncCloud();
+  }, [showCloud, syncCloud]);
+
+  useEffect(() => { readCloud(); }, [readCloud]);
+
+  useEffect(() => {
+    clearTimeout(timers.current.push);
+    timers.current.push = setTimeout(syncCloud, 1400);
+    return () => clearTimeout(timers.current.push);
+  }, [data, syncCloud]);
+
+  useEffect(() => {
+    const wake = () => { if (document.visibilityState === "visible") syncCloud(); };
+    const id = setInterval(wake, 15000);
+    document.addEventListener("visibilitychange", wake);
+    return () => { clearInterval(id); document.removeEventListener("visibilitychange", wake); };
+  }, [syncCloud]);
 
   const setLang = useCallback(next => {
     const code = LANGS.some(l => l.code === next) ? next : "en";
@@ -672,6 +739,7 @@ export function AppProvider({ children }) {
     data, ui, toasts, modal, tracker,
     isStaff, signedIn, me, findAccount,
     lang: data.lang === "id" ? "id" : "en", setLang, t,
+    cloud: cloudUi, readCloud,
     onSale, counts, results, cartList, cartCount, myOrders, dishById, totals,
     setUi, patchUi, write,
     toast, openModal, closeModal, openDrawer, closeDrawer, setTracker,

@@ -25,10 +25,8 @@ export const defaults = () => ({
 
 const board = (saved, seed) => (Array.isArray(saved) && saved.length ? saved : structuredClone(seed));
 
-export function loadState() {
+export function hydrate(saved) {
   const d = defaults();
-  let saved = null;
-  try { saved = JSON.parse(localStorage.getItem(KEY)) || null; } catch { saved = null; }
   if (!saved) return d;
   const merged = {
     ...d, ...saved,
@@ -56,6 +54,12 @@ export function loadState() {
   }
   localise(merged);
   return merged;
+}
+
+export function loadState() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(KEY)) || null; } catch { saved = null; }
+  return hydrate(saved);
 }
 
 function localise(d) {
