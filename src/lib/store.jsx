@@ -79,6 +79,8 @@ const threadOf = (d, id) => (id === threadKey(d.session) ? ensureThread(d) : d.c
 
 const cloudJson = d => JSON.stringify({ ...d, session: null, cart: {} });
 
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
 export function AppProvider({ children }) {
   const [data, setData] = useState(loadState);
   const [ui, setUi] = useState(() => ({
@@ -422,6 +424,18 @@ export function AppProvider({ children }) {
   }, [cartList]);
 
   const sheetBusy = useRef(new Set());
+  const pushRow = useCallback(async o => {
+    for (let tryNo = 1; ; tryNo += 1) {
+      try {
+        await pushOrder(o, t, data.menu);
+        return true;
+      } catch {
+        if (tryNo >= 6) return false;
+        await wait(1000 * tryNo);
+      }
+    }
+  }, [t, data.menu]);
+
   const sendToSheet = useCallback(orders => {
     const url = getHook();
     if (!url) return Promise.resolve(0);
@@ -430,14 +444,14 @@ export function AppProvider({ children }) {
     queue.forEach(o => sheetBusy.current.add(o.id));
     let sent = 0;
     return queue.reduce((chain, o) => chain
-      .then(() => pushOrder(o, t, data.menu))
-      .then(() => {
+      .then(() => pushRow(o))
+      .then(ok => {
+        if (!ok) return;
         sent += 1;
         write(d => { const x = d.orders.find(y => y.id === o.id); if (x) x.synced = true; });
       })
-      .catch(() => {})
       .then(() => { sheetBusy.current.delete(o.id); }), Promise.resolve()).then(() => sent);
-  }, [t, data.menu, write]);
+  }, [pushRow, write]);
 
   const retrySheet = useCallback(() => {
     if (document.visibilityState !== "visible" || !getHook()) return;
