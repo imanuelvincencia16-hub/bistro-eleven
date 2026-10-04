@@ -7,7 +7,6 @@ import Ico from "../lib/icons.jsx";
 import NewDishForm from "../components/modals/NewDishForm.jsx";
 import OrderTicket from "../components/admin/OrderTicket.jsx";
 import OrderLedger from "../components/admin/OrderLedger.jsx";
-import DeviceMove from "../components/modals/DeviceMove.jsx";
 import DishRow from "../components/admin/DishRow.jsx";
 import ChatDesk from "../components/admin/ChatDesk.jsx";
 
@@ -52,7 +51,6 @@ export default function AdminPage() {
           <div className="admin__head-actions">
             <span className="live"><i /> {t("live", "langsung")}</span>
             <button className="btn btn--ghost btn--sm" onClick={app.previewSite}><Ico name="eye" /> {t("View the guest site", "Lihat situs tamu")}</button>
-            <button className="btn btn--ghost btn--sm" onClick={() => app.openModal(<DeviceMove />, "modal--slim")}><Ico name="share" /> {t("Move to another device", "Pindah ke perangkat lain")}</button>
             <button className="btn btn--ghost btn--sm" onClick={app.resetDemo}>{t("Reset demo data", "Setel ulang data demo")}</button>
           </div>
         </header>

@@ -185,21 +185,6 @@
 .sync-steps{margin:18px 0 0;padding:0 0 0 18px;display:flex;flex-direction:column;gap:7px;
   font-size:.78rem;color:var(--ink-2);line-height:1.5}
 .sync-steps li::marker{font-weight:700;color:var(--accent)}
-.move-name{margin:9px 0 0;font-size:.72rem;text-align:center;word-break:break-all}
-.move-sep{margin:18px 0;border:0;border-top:1px solid var(--line)}
-.move-form{display:flex;flex-direction:column;gap:8px}
-.move-form label{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
-.move-form input[type=file]{padding:10px 12px;border:1.5px dashed var(--line-2);border-radius:var(--r-sm);
-  background:var(--surface-2);color:var(--ink-2);font:inherit;font-size:.76rem;cursor:pointer;
-  transition:border-color .3s,color .3s}
-.move-form input[type=file]:hover{border-color:var(--accent);border-style:solid;color:var(--ink)}
-.move-form input[type=file]::file-selector-button{margin-right:11px;padding:6px 13px;border:1px solid var(--line-2);
-  border-radius:var(--r-pill);background:var(--surface);color:var(--ink);font:inherit;font-size:.72rem;
-  font-weight:700;cursor:pointer}
-.move-staged{margin-top:14px;padding:13px 14px;border:1px solid var(--line-2);border-radius:var(--r-sm);
-  background:var(--surface)}
-.move-staged p{margin:0 0 9px;font-size:.76rem;line-height:1.45}
-.move-counts{font-weight:700;color:var(--ink)}
 .sheet-wrap{overflow:auto;max-height:min(62vh,560px);border:1px solid var(--line);border-radius:var(--r-md);
   background:var(--surface);box-shadow:var(--shadow-s)}
 .sheet{border-collapse:separate;border-spacing:0;width:100%;font-size:.8rem}

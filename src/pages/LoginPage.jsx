@@ -4,7 +4,6 @@ import { badEmail } from "../lib/format.js";
 import { STAFF } from "../data/biz.js";
 import { AMBIENCE, BANNER, pic } from "../data/photos.js";
 import Photo from "../components/Photo.jsx";
-import DeviceMove from "../components/modals/DeviceMove.jsx";
 
 const TABS = [["in", "Sign in", "Masuk"], ["up", "Create account", "Buat akun"], ["staff", "Kitchen staff", "Staf dapur"]];
 
@@ -182,14 +181,6 @@ export default function LoginPage() {
               <p className="auth__hint">{t("Demo kitchen login, user", "Login dapur demo, pengguna")} <b>{STAFF.user}</b> · {t("password", "kata sandi")} <b>{STAFF.pass}</b>.
                 {t("Change it in", "Ubah di")} <code>src/data/biz.js</code>.</p>
             </form>
-          )}
-
-          {tab === "staff" && (
-            <p className="auth__back">
-              <button className="text-btn" type="button" onClick={() => app.openModal(<DeviceMove />, "modal--slim")}>
-                {t("Bring my data from another device", "Bawa datamu dari perangkat lain")}
-              </button>
-            </p>
           )}
 
           <p className="auth__back">
